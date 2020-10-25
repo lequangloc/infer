@@ -35,7 +35,6 @@ type t =
 [@@deriving compare, equal]
 
 val equal : t -> t -> bool
-
 val is_abduce_free : t -> bool
 
 val is_actual_free : t -> bool

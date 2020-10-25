@@ -22,7 +22,6 @@ include sig
     ; lab_resource_leaks: ResourceLeakDomain.summary option
     ; litho_required_props: LithoDomain.summary option
     ; pulse: PulseSummary.t option
-    ; pil: PulseISLSummary.t option
     ; purity: PurityDomain.summary option
     ; quandary: QuandarySummary.t option
     ; racerd: RacerDDomain.summary option
@@ -30,7 +29,7 @@ include sig
     ; starvation: StarvationDomain.summary option
     ; nullsafe: NullsafeSummary.t option
     ; uninit: UninitDomain.Summary.t option }
-   [@@deriving fields , yojson_of]
+  [@@deriving fields, yojson_of]
 end
 
 val pp : Pp.env -> Format.formatter -> t -> unit

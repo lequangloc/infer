@@ -32,8 +32,6 @@ type operand = LiteralOperand of IntLit.t | AbstractValueOperand of Var.t
 
 val ttrue : t
 
-val is_ttrue : t -> bool
-
 val and_equal : operand -> operand -> t -> t normalized
 
 val and_less_equal : operand -> operand -> t -> t normalized
@@ -56,8 +54,6 @@ val simplify : keep:Var.Set.t -> t -> t normalized
 val and_fold_subst_variables :
   t -> up_to_f:t -> init:'acc -> f:('acc -> Var.t -> 'acc * Var.t) -> ('acc * t) normalized
 
-val get_variables : t -> Var.Set.t
-  
 val is_known_zero : t -> Var.t -> bool
 
 val as_int : t -> Var.t -> int option

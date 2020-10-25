@@ -14,8 +14,6 @@ type t [@@deriving yojson_of]
 
 val true_ : t
 
-val is_true : t -> bool
-
 val pp : F.formatter -> t -> unit
 
 (** {2 Building arithmetic constraints} *)
@@ -53,14 +51,6 @@ val prune_binop : negated:bool -> Binop.t -> operand -> operand -> t -> t
 
 val is_known_zero : t -> AbstractValue.t -> bool
 (** [is_known_zero phi t] returns [true] if [phi |- t = 0], [false] if we don't know for sure *)
-
-val is_equal_to : t -> AbstractValue.t -> IntLit.t -> bool
-(** [is_equal_to phi t i] returns [true] if [phi |- t = i], [false] if we don't know for sure *)
-
- val get_variables : t  -> AbstractValue.Set.t
-
-val is_known_neq_zero : t -> AbstractValue.t -> bool
-(** [is_known_neq_zero phi t] returns [true] if [phi |- t != 0], [false] if we don't know for sure *)
 
 val is_unsat_cheap : t -> bool
 (** whether the state contains a contradiction, call this as often as you want *)

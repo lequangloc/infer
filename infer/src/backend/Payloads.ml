@@ -18,7 +18,6 @@ type t =
   ; lab_resource_leaks: ResourceLeakDomain.summary option
   ; litho_required_props: LithoDomain.summary option
   ; pulse: PulseSummary.t option
-  ; pil: PulseISLSummary.t option
   ; purity: PurityDomain.summary option
   ; quandary: QuandarySummary.t option
   ; racerd: RacerDDomain.summary option
@@ -26,10 +25,10 @@ type t =
   ; starvation: StarvationDomain.summary option
   ; nullsafe: NullsafeSummary.t option
   ; uninit: UninitDomain.Summary.t option }
- [@@deriving fields]
+[@@deriving fields]
 
- let yojson_of_t (* {pulse} *) _ = `String ("Payloads: dump")
- (*   [%yojson_of: (string * PulseSummary.t option) list] [(Checker.get_id Pulse, pulse)] *)
+let yojson_of_t {pulse} =
+  [%yojson_of: (string * PulseSummary.t option) list] [(Checker.get_id Pulse, pulse)]
 
 
 type 'a pp = Pp.env -> F.formatter -> 'a -> unit
@@ -49,7 +48,6 @@ let fields =
     ~cost:(fun f -> mk f "Cost" CostDomain.pp_summary)
     ~litho_required_props:(fun f -> mk f "Litho Required Props" LithoDomain.pp_summary)
     ~pulse:(fun f -> mk f "Pulse" PulseSummary.pp)
-    ~pil:(fun f -> mk f "Pil" PulseISLSummary.pp)
     ~purity:(fun f -> mk f "Purity" PurityDomain.pp_summary)
     ~quandary:(fun f -> mk f "Quandary" QuandarySummary.pp)
     ~racerd:(fun f -> mk f "RacerD" RacerDDomain.pp_summary)
@@ -75,7 +73,6 @@ let empty =
   ; lab_resource_leaks= None
   ; litho_required_props= None
   ; pulse= None
-  ; pil= None
   ; purity= None
   ; quandary= None
   ; racerd= None

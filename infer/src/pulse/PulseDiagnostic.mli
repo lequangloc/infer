@@ -22,7 +22,7 @@ type access_to_invalid_address =
   ; access_trace: Trace.t
         (** assuming we are in the calling context, the trace leads to an access to the value
             invalidated in [invalidation_trace] without further assumptions *) }
-[@@deriving compare,equal, yojson_of]
+[@@deriving compare,equal,yojson_of]
 
 
 (** an error to report to the user *)
@@ -30,12 +30,11 @@ type t =
   | AccessToInvalidAddress of access_to_invalid_address
   | MemoryLeak of {procname: Procname.t; allocation_trace: Trace.t; location: Location.t}
   | StackVariableAddressEscape of {variable: Var.t; history: ValueHistory.t; location: Location.t}
-  | OrError of (t list * Location.t)
 [@@deriving compare, equal]
 
 val equal : t -> t -> bool
 
-val get_message : ?print_loc:bool -> t -> string
+val get_message : t -> string
 
 val get_location : t -> Location.t
 

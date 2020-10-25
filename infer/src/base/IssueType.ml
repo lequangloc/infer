@@ -435,7 +435,6 @@ let pulse_dangling_pointer_dereference =
   register ~enabled:false ~id:"PULSE_DANGLING_POINTER_DEREFERENCE" Error Pulse
       ~user_documentation:""
 
-
 let dangling_pointer_dereference_maybe =
   register_hidden ~enabled:false ~id:"DANGLING_POINTER_DEREFERENCE_MAYBE" Warning Biabduction
 
@@ -983,10 +982,6 @@ let wrong_argument_number =
 
 let unreachable_cost_call ~kind = register_cost ~enabled:false ~kind "%s_UNREACHABLE_AT_EXIT"
 
-let combined_pointer_errors =
-  register ~id:"COMBINED_POINTER_ERRORS" Warning Pulse
-      ~user_documentation:"See ...."
-  
 (* register enabled cost issues *)
 let is_autoreleasepool_size_issue =
   let autoreleasepool_size_issues = ref IssueSet.empty in

@@ -25,7 +25,6 @@ type t =
   | AccessToInvalidAddress of access_to_invalid_address
   | MemoryLeak of {procname: Procname.t; allocation_trace: Trace.t; location: Location.t}
   | StackVariableAddressEscape of {variable: Var.t; history: ValueHistory.t; location: Location.t}
-  | OrError of (t list * Location.t)
 [@@deriving compare,equal]
 
 let get_location = function
@@ -34,12 +33,10 @@ let get_location = function
   | AccessToInvalidAddress {calling_context= (_, location) :: _} ->
       (* report at the call site that triggers the bug *) location
   | MemoryLeak {location} | StackVariableAddressEscape {location} ->
-     location
-  | OrError (_, location) -> location
+      location
 
 
-
-let rec get_message ?print_loc:(pr=false) = function
+let get_message = function
   | AccessToInvalidAddress {calling_context; invalidation; invalidation_trace; access_trace} ->
       (* The goal is to get one of the following messages depending on the scenario:
 
@@ -57,35 +54,28 @@ let rec get_message ?print_loc:(pr=false) = function
 
          Likewise if we don't have "x" in the second part but instead some non-user-visible expression, then
          "`x->f` accesses `x`, which was invalidated at line 42 by `delete`"
-       *)
-     let pp_line fmt line = if line < 0 then F.fprintf fmt " in a caller" else F.fprintf fmt " on line %d" line in
+      *)
+      (* whether the [calling_context + trace] starts with a call or contains only an immediate event *)
       let immediate_or_first_call calling_context (trace : Trace.t) =
         match (calling_context, trace) with
-        | [], Immediate {location} ->
-            `Immediate location
-        | (f, location) :: _, _ | [], ViaCall {f; location} ->
-            `Call (f, location)
+        | [], Immediate _ ->
+            `Immediate
+        | (f, _) :: _, _ | [], ViaCall {f; _} ->
+            `Call f
       in
       let pp_access_trace fmt (trace : Trace.t) =
         match immediate_or_first_call calling_context trace with
-        (* match trace with *)
-        | `Immediate location ->
-             if pr then
-                 F.fprintf fmt "accessing memory (%a) that " pp_line location.Location.line
-             else
-                 F.fprintf fmt "accessing memory that "
-        | `Call (f, location) ->
-             if pr then
-                 F.fprintf fmt ("call to %a eventually accesses memory (%a) that ") CallEvent.describe f pp_line location.Location.line
-             else
-                 F.fprintf fmt ("call to %a eventually accesses memory that ") CallEvent.describe f
+        | `Immediate ->
+            F.fprintf fmt "accessing memory that "
+        | `Call f ->
+            F.fprintf fmt "call to %a eventually accesses memory that " CallEvent.describe f
       in
       let pp_invalidation_trace line invalidation fmt (trace : Trace.t) =
+        let pp_line fmt line = F.fprintf fmt " on line %d" line in
         match immediate_or_first_call calling_context trace with
-        (* match trace with *)
-        | `Immediate _ ->
+        | `Immediate ->
             F.fprintf fmt "%a%a" Invalidation.describe invalidation pp_line line
-        | `Call (f, _) ->
+        | `Call f ->
             F.fprintf fmt "%a%a indirectly during the call to %a" Invalidation.describe invalidation
               pp_line line CallEvent.describe f
       in
@@ -117,8 +107,7 @@ let rec get_message ?print_loc:(pr=false) = function
         else F.fprintf f "stack variable `%a`" Var.pp var
       in
       F.asprintf "address of %a is returned by the function" pp_var variable
-  | OrError (ers, _) ->
-     F.asprintf "If this function is called, one of the following errors will happen:\n%s" (List.fold ers ~init:"" ~f:(fun acc er -> acc ^ ("   - " ^ get_message ~print_loc:true er) ^"\n"))
+
 
 let add_errlog_header ~title location errlog =
   let depth = 0 in
@@ -167,8 +156,6 @@ let get_trace = function
       @@
       let nesting = 0 in
       [Errlog.make_trace_element nesting location "returned here" []]
-  | OrError _ ->
-     []
 
 
 let get_issue_type = function
@@ -178,5 +165,3 @@ let get_issue_type = function
       IssueType.pulse_memory_leak
   | StackVariableAddressEscape _ ->
       IssueType.stack_variable_address_escape
-  | OrError _ ->
-     IssueType.combined_pointer_errors

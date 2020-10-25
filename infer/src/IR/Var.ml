@@ -93,4 +93,3 @@ module PPKey = struct
 end
              
 module Map = PrettyPrintable.MakePPMap (PPKey)
-module Set = PrettyPrintable.MakePPSet (PPKey)

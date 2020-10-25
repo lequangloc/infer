@@ -16,7 +16,7 @@ val apply_prepost :
   -> formals:Var.t list
   -> actuals:((AbstractValue.t * ValueHistory.t) * Typ.t) list
   -> PulseAbductiveDomain.t
-  -> ( (PulseAbductiveDomain.t * (AbstractValue.t * ValueHistory.t) option *  ((ValueHistory.t)  AbstractValue.Map.t)) option
+  -> ( (PulseAbductiveDomain.t * (AbstractValue.t * ValueHistory.t) option) option
      , Diagnostic.t * PulseAbductiveDomain.t )
      result
 (** return the abstract state after the call along with an optional return value, or [None] if the

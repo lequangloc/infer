@@ -976,8 +976,7 @@ module Formula = struct
 
   let ttrue = {var_eqs= VarUF.empty; linear_eqs= Var.Map.empty; atoms= Atom.Set.empty}
 
-  
-let pp_with_pp_var pp_var fmt phi =
+  let pp_with_pp_var pp_var fmt phi =
     let pp_linear_eqs fmt m =
       if Var.Map.is_empty m then F.pp_print_string fmt "true (no linear)"
       else
@@ -989,6 +988,7 @@ let pp_with_pp_var pp_var fmt phi =
     F.fprintf fmt "@[<hv>%a@ &&@ %a@ &&@ %a@]"
       (VarUF.pp ~pp_empty:(fun fmt -> F.pp_print_string fmt "true (no var=var)") pp_var)
       phi.var_eqs pp_linear_eqs phi.linear_eqs (Atom.Set.pp_with_pp_var pp_var) phi.atoms
+
 
   (** module that breaks invariants more often that the rest, with an interface that is safer to use *)
   module Normalizer : sig
@@ -1255,10 +1255,7 @@ let and_mk_atom mk_atom op1 op2 phi =
   let atom = mk_atom (Term.of_operand op1) (Term.of_operand op2) in
   and_known_atom atom phi
 
-let is_ttrue phi =
-  let {Formula.var_eqs; Formula.linear_eqs; Formula.atoms} = phi.both in
-  VarUF.is_empty var_eqs && Var.Map.is_empty linear_eqs && Atom.Set.is_empty atoms
-                                          
+
 let and_equal = and_mk_atom Atom.equal
 
 let and_less_equal = and_mk_atom Atom.less_equal
@@ -1485,35 +1482,7 @@ let simplify ~keep phi =
   let pruned = Atom.Set.filter filter_atom phi.pruned in
   {known; pruned; both}
 
-let get_variables phi=
-   let {Formula.var_eqs; Formula.linear_eqs; Formula.atoms} = phi.both in
-   let get_var_eqs acc =
-    VarUF.fold_congruences var_eqs ~init:acc
-      ~f:(fun acc_f  (repr_foreign, vs_foreign) ->
-        let acc_f = Var.Set.add (repr_foreign :> Var.t) acc_f in
-        IContainer.fold_of_pervasives_set_fold Var.Set.fold vs_foreign ~init:(acc_f)
-          ~f:(fun acc_f v_foreign ->
-            Var.Set.add v_foreign acc_f
-      ) )
-  in
-  let get_linear_eqs acc =
-    IContainer.fold_of_pervasives_map_fold Var.Map.fold linear_eqs ~init:acc
-      ~f:(fun acc_f (v_foreign, l_foreign) ->
-        let acc_f =  Var.Set.add v_foreign acc_f in
-        (fst (LinArith.fold_subst_variables l_foreign ~init:acc_f ~f:(fun acc_f var -> Var.Set.add var acc_f, VarSubst var))))
-  in
-  let get_atoms acc =
-    IContainer.fold_of_pervasives_set_fold Atom.Set.fold atoms ~init:acc
-      ~f:(fun acc_f atom_foreign ->
-        let acc_f, _ =
-          Atom.fold_subst_variables atom_foreign ~init:acc_f ~f:(fun acc_f v ->
-              let acc_f =  Var.Set.add v acc_f in
-              (acc_f, VarSubst v) )
-        in
-        (acc_f) )
-  in
-  get_atoms (get_linear_eqs (get_var_eqs Var.Set.empty))
-  
+
 let is_known_zero phi v =
   Var.Map.find_opt (VarUF.find phi.both.var_eqs v :> Var.t) phi.both.linear_eqs
   |> Option.exists ~f:LinArith.is_zero

@@ -15,8 +15,7 @@ module Access : sig
 end
 
 module AddrTrace : sig
-    type t = AbstractValue.t * ValueHistory.t
-    val pp :  Format.formatter -> t -> unit
+  type t = AbstractValue.t * ValueHistory.t
 end
 
 module Edges : RecencyMap.S with type key = Access.t and type value = AddrTrace.t
@@ -25,15 +24,8 @@ include PrettyPrintable.PPMonoMap with type key = AbstractValue.t and type value
 
 val register_address : AbstractValue.t -> t -> t
 
-val remove_address : AbstractValue.t -> t -> t
-  
 val add_edge : AbstractValue.t -> Access.t -> AddrTrace.t -> t -> t
 
 val find_edge_opt : AbstractValue.t -> Access.t -> t -> AddrTrace.t option
 
-val find_edges_opt : AbstractValue.t -> t -> Edges.t option
-
-val exist_edge_dest : AbstractValue.t -> t -> bool
-
 val yojson_of_t : t -> Yojson.Safe.t
-
