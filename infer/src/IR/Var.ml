@@ -86,10 +86,9 @@ let pp fmt = function
 let get_footprint_index t =
   match t with LogicalVar id when is_footprint t -> Some (Ident.get_stamp id) | _ -> None
 
-module PPKey = struct
+
+module Map = PrettyPrintable.MakePPMap (struct
   type nonrec t = t [@@deriving compare]
 
   let pp = pp
-end
-             
-module Map = PrettyPrintable.MakePPMap (PPKey)
+end)
